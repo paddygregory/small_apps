@@ -1,6 +1,7 @@
 # use flashcard_app() or knowledge_base_app() to run the app locally
 # flashcard data is saved to a shelve database in the cwd, knowledge base data is saved to a shelve database in the cwd
 # concatenate with folder app, potentially into a single repo or single app
+# TODO - create a folder
 import shelve, random, pyinputplus as pyip
 from dataclasses import dataclass
 from collections import defaultdict

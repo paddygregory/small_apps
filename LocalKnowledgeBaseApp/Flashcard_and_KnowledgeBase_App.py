@@ -26,7 +26,11 @@ class Quiz:
     
     def remove(self, card):
         with shelve.open(f"{self.db}") as db:
-            del db[card.question]
+            if isinstance(card, Card):
+                del db[card.question]
+            else:
+                # If card is just a string (question)
+                del db[card]
     
     def list_questions(self):
         with shelve.open(f"{self.db}") as db:
@@ -73,9 +77,12 @@ def flashcard_app():
 
         elif choice == 'remove':
             question = pyip.inputStr("Enter the question: ")
-            if question not in quiz.list_questions():
-                print("Question not found")
-            quiz.remove(question)
+            with shelve.open(f"{quiz.db}") as db:
+                if question in db:
+                    quiz.remove(question)
+                    print(f"Removed: {question}")
+                else:
+                    print("Question not found")
 
         elif choice == 'list':
             quiz.list_questions()

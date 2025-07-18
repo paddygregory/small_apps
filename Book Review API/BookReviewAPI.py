@@ -72,3 +72,6 @@ def get_book(genre: str, rating: float):
         if books[book]["genre"] == genre and books[book]["rating"] >= rating:
             matches.append(books[book])
     return random.choice(matches)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

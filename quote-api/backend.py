@@ -20,7 +20,10 @@ class Quote(SQLModel, table=True):
     author: str = Field(index=True, min_length=3, max_length=50)
     quote: str = Field(index=True, min_length=3, max_length=200)
 
-# Create tables AFTER defining the model
+class QuoteUpdate(SQLModel, table=False):
+    author: Optional[str] = Field(default=None, min_length=3, max_length=50)
+    quote: Optional[str] = Field(default=None, min_length=3, max_length=200)
+
 SQLModel.metadata.create_all(database)
 
 @app.post("/quotes")
@@ -63,6 +66,42 @@ def get_random_quote(quote_author: str):
             if random_quote == None:
                 return {"error": f'{quote_author} not found'}
             return random_quote
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.put("/quotes/{quote_id}")
+def update_quote(quote_id: int, quote: QuoteUpdate = Body(
+    ...,
+    example={
+        "author": "John Doe",
+        "quote": "This is a quote"
+    }
+)): 
+    try:
+        with Session(database) as session:
+            quote_to_update = session.get(Quote, quote_id)
+            if quote_to_update == None:
+                return {"error": f'Quote with id {quote_id} not found'}
+            quote_data = quote.model_dump(exclude_unset=True)
+            for key, value in quote_data.items():
+                setattr(quote_to_update, key, value)
+            session.add(quote_to_update)
+            session.commit()
+            session.refresh(quote_to_update)
+            return quote_to_update
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.delete("/quotes/{quote_author}/{quote_quote}")
+def delete_quote(quote_author: str, quote_quote: str):
+    try:
+        with Session(database) as session:
+            quote_to_delete = session.exec(select(Quote).where(Quote.author.like(f"%{quote_author}%"), Quote.quote.like(f"%{quote_quote}%"))).first()
+            if quote_to_delete == None:
+                return {"error": f'Quote with author {quote_author} and quote {quote_quote} not found'}
+            session.delete(quote_to_delete)
+            session.commit()
+            return {"message": f'Quote with author {quote_author} and quote {quote_quote} deleted successfully'}
     except Exception as e:
         return {"error": str(e)}
 

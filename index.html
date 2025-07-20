@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quotes ✨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #6418c3, #e63e6c);
+      color: #fefefe;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 1rem;
+    }
+
+    input {
+      background-color: #2e2e2e;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff497c;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff2c64;
+    }
+
+    .quote {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 1rem;
+      margin: 1rem 0;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    .quote strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 0.3rem;
+      color: #ffd6e2;
+    }
+
+    h2 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    #quote-list {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>✨ Quotes</h1>
+
+  <div class="container">
+    <h2>Add a Quote</h2>
+    <form id="quote-form">
+      <input type="text" id="author" placeholder="Author" required />
+      <input type="text" id="quote" placeholder="Quote" required />
+      <button type="submit">Submit</button>
+    </form>
+
+    <h2>Search by Author</h2>
+    <input type="text" id="search" placeholder="Search author..." />
+    <button onclick="searchQuotes()">Search</button>
+
+    <h2>All Quotes</h2>
+    <div id="quote-list"></div>
+  </div>
+
+  <script>
+    const BASE_URL = 'https://quote-generator-4mby.onrender.com'; 
+
+    async function fetchAllQuotes() {
+      try {
+        const res = await fetch(`${BASE_URL}/quotes`);
+        const quotes = await res.json();
+        displayQuotes(quotes);
+      } catch (err) {
+        alert("Failed to fetch quotes.");
+        console.error(err);
+      }
+    }
+
+    function displayQuotes(quotes) {
+      const container = document.getElementById("quote-list");
+      container.innerHTML = "";
+      if (!quotes.length) {
+        container.innerHTML = "<p>No quotes found.</p>";
+        return;
+      }
+
+      quotes.forEach(q => {
+        const div = document.createElement("div");
+        div.className = "quote";
+        div.innerHTML = `<strong>${q.author}</strong>${q.quote}`;
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById("quote-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const author = document.getElementById("author").value;
+      const quote = document.getElementById("quote").value;
+
+      try {
+        await fetch(`${BASE_URL}/quotes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ author, quote })
+        });
+        e.target.reset();
+        fetchAllQuotes();
+      } catch (err) {
+        alert("Failed to submit quote.");
+        console.error(err);
+      }
+    });
+
+    async function searchQuotes() {
+      const term = document.getElementById("search").value.trim();
+      if (!term) return fetchAllQuotes();
+
+      try {
+        const res = await fetch(`${BASE_URL}/quotes/${term}`);
+        const quotes = await res.json();
+        displayQuotes(quotes);
+      } catch (err) {
+        alert("Search failed.");
+        console.error(err);
+      }
+    }
+
+    fetchAllQuotes();
+  </script>
+</body>
+</html>

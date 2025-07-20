@@ -8,6 +8,17 @@ from sqlalchemy import func
 
 # code
 app = FastAPI()
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (GitHub Pages, localhost, etc.)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def read_root():
     return {"message": "Quote API is running!"}

@@ -47,6 +47,15 @@ def create_quote(
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/quotes")
+def get_quotes():
+    try:
+        with Session(database) as session:
+            quotes = session.exec(select(Quote)).all()
+            return quotes
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/quotes/{quote_author}")
 def get_quotes_by_author(quote_author: str):
     try:

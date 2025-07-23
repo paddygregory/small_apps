@@ -1,30 +1,47 @@
 # requirements 
 
-from fastapi import FastAPI, Path, Body
+from fastapi import FastAPI, Path, Body, HTTPException
+from starlette.responses import Response
 from pydantic import BaseModel
 from typing import Optional
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from sqlalchemy import func
+import os
+import random
+from dotenv import load_dotenv
 
-# code
-app = FastAPI()
+
+
+app = FastAPI() 
 
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (GitHub Pages, localhost, etc.)
     allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/")
 def read_root():
-    return {"message": "Quote API is running!"}
+    return {"message": "Quote API is running!!!!!!!!!!!!!"}
+
+@app.head("/", include_in_schema=False)
+def head_root():
+    return Response(headers={"X-App-Status": "Alive"})
+
 
 # database
-database = create_engine("sqlite:///quotes.db")
+load_dotenv()
+
+database = create_engine(
+    os.getenv("DATABASE_URL"),
+    connect_args={"sslmode": "require"}
+)
+
+
 
 class Quote(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -88,6 +105,14 @@ def get_random_quote(quote_author: str):
             return random_quote
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/random-quote")
+def get_random_quote():
+    with Session(database) as session:
+        quotes = session.exec(select(Quote)).all()
+        if not quotes:
+            return {"error": "No quotes found"}
+        return random.choice(quotes)
 
 @app.put("/quotes/{quote_id}")
 def update_quote(quote_id: int, quote: QuoteUpdate = Body(

@@ -65,8 +65,12 @@ def update_todo(todo_title: str, todo: TodoUpdate = Body(
         if result:
             if todo.title is not None:
                 result.title = todo.title
+            else:
+                result.title = result.title
             if todo.description is not None:
                 result.description = todo.description
+            else:
+                result.description = result.description
             session.commit()
             session.refresh(result)
             return f"Todo updated successfully with id {result.id} and title {result.title}"
@@ -85,3 +89,7 @@ def delete_todo(todo_title: str):
         else:
             raise HTTPException(status_code=404, detail='Todo not found')
 
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
